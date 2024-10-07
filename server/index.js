@@ -8,10 +8,10 @@ app.use(express.json());
 
 app.post("/blogs", async(req, res) => {
     try {
-        const {blog_id, title, likes, favorites, user_id} = req.body;
+        const {title, body, likes, favorites, user_id} = req.body;
         const new_blog = await pool.query(
-            "INSERT INTO blogs (title, likes, favorites, user_id) VALUES($1, $2, $3, $4) RETURNING *",
-            [title, likes, favorites, user_id]
+            "INSERT INTO blogs (title, body, likes, favorites, user_id) VALUES($1, $2, $3, $4, $5) RETURNING *",
+            [title, body, likes, favorites, user_id]
         );
 
         res.json(new_blog.rows[0]);
@@ -56,7 +56,9 @@ app.put("/blogs/:id", async(req, res) => {
 app.delete("/blogs/:id", async(req, res) => {
     try {
         const {id} = req.params;
-        const delete_blog = await pool.query("DELETE FROM blogs WHERE blog_id = $1", [id]);
+        const delete_blog = await pool.query("DELETE FROM blogs WHERE blog_id = $1", 
+            [id]
+        );
         res.json("Blog deleted successfully.");
     } catch (err) {
         console.error(err.message);
