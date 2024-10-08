@@ -95,7 +95,7 @@ app.get("/api/users/:id", async (req, res) => {
     const userId = req.params.id;
 
     try {
-        const result = await pool.query("SELECT * FROM users WHERE id = $1", [userId]);
+        const result = await pool.query("SELECT username, created_at FROM users WHERE id = $1", [userId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -105,6 +105,22 @@ app.get("/api/users/:id", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+
+app.get("/api/blogs/:id", async (req, res) => {
+    const blogId = req.params.id;
+
+    try {
+        const result = await pool.query("SELECT * FROM blogs WHERE blog_id = $1", [blogId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
+        res.json(result.rows[0]); // Return the user data
+    } catch (error) {
+        console.error('Error fetching Blog:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 
 
 app.post("/blogs", authenticateToken, async(req, res) => {

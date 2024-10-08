@@ -7,6 +7,7 @@ import { Route, Routes } from 'react-router';
 import SignUpView from './routes/sign_up';
 import LoginView from './routes/login';
 import ProfileView from './components/profile_view';
+import BlogView from './components/blog_view';
 
 
 function App() {
@@ -21,6 +22,9 @@ function App() {
         </Route>
         <Route element={ <ProtectRoutes /> }>
           <Route path='/users/:id' element={ <ProfileView /> } />
+        </Route>
+        <Route element={ <ProtectRoutes /> }>
+          <Route path='/blogs/:id' element={ <BlogView /> } />
         </Route>
       </Routes>
     </AuthProvider>
