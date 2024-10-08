@@ -53,7 +53,7 @@ app.post("/api/createNewUser", async(req, res) => {
         [username, email, hashedPassword, salt]
     );
 
-    res.json(new_user.rows[0]);
+    res.json({email:email, password:password});
 
 });
 
@@ -75,7 +75,11 @@ app.post("/api/login", async (req, res) => {
 
         const user = result.rows[0];
 
+        console.log(password, user.password);
         const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        console.log('Password valid?', isPasswordValid);  // Add this to check comparison result
+        
 
         if (!isPasswordValid) {
             console.log("INVALID PASSWORD");
@@ -84,8 +88,8 @@ app.post("/api/login", async (req, res) => {
 
         const token = generateAccessToken({ email: user.email }); 
 
-        res.json({ token, name: user.username }); 
-    } catch (error) {
+        res.json({ token, name: user.username, id: user.id }); 
+        } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Server error" });
     }
@@ -123,7 +127,7 @@ app.get("/api/blogs/:id", async (req, res) => {
 
 
 
-app.post("/blogs", authenticateToken, async(req, res) => {
+app.post("/api/blogs", authenticateToken, async(req, res) => {
     try {
         const {title, body, likes, favorites, user_id} = req.body;
         const new_blog = await pool.query(
@@ -181,6 +185,89 @@ app.delete("/blogs/:id", async(req, res) => {
         console.error(err.message);
     }
 })
+
+app.post('/api/blogs/:id/like', async (req, res) => {
+    const blogId = req.params.id;
+    const userId = req.user.id;
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO likes (user_id, blog_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [userId, blogId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ message: 'Blog already liked' });
+        }
+
+        res.json({ message: 'Blog liked successfully' });
+    } catch (error) {
+        console.error('Error liking blog:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// app.use((req, res, next) => {
+//     req.user = { id: 1 }; // Example, replace with real authentication
+//     next();
+// });
+
+// Favorite a blog
+app.post('/api/blogs/:id/favorite', async (req, res) => {
+    const blogId = req.params.id;
+    const userId = 9;//req.user.id;
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO favorites (user_id, blog_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [userId, blogId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ message: 'Blog already favorited' });
+        }
+
+        res.json({ message: 'Blog favorited successfully' });
+    } catch (error) {
+        console.error('Error favoriting blog:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get user's liked blogs
+app.get('/api/user/likes', async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const result = await pool.query(
+            'SELECT blogs.* FROM blogs JOIN likes ON blogs.id = likes.blog_id WHERE likes.user_id = $1',
+            [userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching liked blogs:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get user's favorited blogs
+app.get('/api/users/:id/favorites', async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'SELECT blogs.* FROM blogs JOIN favorites ON blogs.blog_id = favorites.blog_id WHERE favorites.user_id = $1',
+            [userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching favorited blogs:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 app.listen(5000, () => {

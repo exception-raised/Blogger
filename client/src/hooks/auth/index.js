@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }) => {
 
         setCookies('token', res.data.token); // your token
         setCookies('name', res.data.name); // optional data
-        
-        console.log("here");
+        setCookies('userId', res.data.id);
+
         navigate('/');
     };
 

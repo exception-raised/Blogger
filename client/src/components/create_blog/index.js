@@ -3,6 +3,7 @@ import React from 'react';
 import MDEditor, {EditorContext} from '@uiw/react-md-editor';
 import rehypeSanitize from "rehype-sanitize";
 import "./markdown_editor.css";
+import { useCookies } from 'react-cookie';
 
 async function CreateBlog(blogData) {
     try {
@@ -85,7 +86,19 @@ const PreviewButton = () => {
   
 
 export default function CreateBlogView() {
-    const [blogData, setBlogData] = React.useState({}); 
+    const [blogData, setBlogData] = React.useState({
+      title: '', 
+      user_id: '' 
+    });
+
+    // const token = useCookies(['token']);
+    // if (token) {
+    //   const decodedToken = jwt.decode(token);
+    //   let userId = decodedToken.id; // Access the user ID
+    //   console.log(userId);
+
+    // }
+
     const [markdownValue, setMarkdownValue] = React.useState("**Hello world!!!**");
 
     const handleSubmit = async (e) => {
