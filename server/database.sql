@@ -3,8 +3,10 @@ CREATE DATABASE bloggerdb;
 CREATE TABLE "users" (
   "id" SERIAL PRIMARY KEY,
   "username" varchar,
+  "email" varchar,
   "password" varchar,
-  "created_at" timestamp
+  "created_at" timestamp DEFAULT NOW(),
+  "salt" varchar
 );
 
 CREATE TABLE "blogs" (
