@@ -1,33 +1,20 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import {
-  createBrowserRouter,
-  RouterProvider,
+  BrowserRouter,
 } from "react-router-dom";
+import ReactDOM from 'react-dom/client';
+import AppProvider from './hooks/app_provider';
 
-import SignUpView from './components/sign_up';
 
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: App(),
-  },
-  {
-    path: "sign-up",
-    element: SignUpView()
-  },
-  // {
-  //   path: "sign-in",
-  //   element: SignIn()
-  // },
-]);
-
-ReactDOM.createRoot(document.getElementById("root")).render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <BrowserRouter>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );
-

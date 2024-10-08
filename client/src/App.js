@@ -1,13 +1,25 @@
 import './App.css';
 import ListUserBlogs from './components/list_user_blogs';
 import CreateBlogView from './components/create_blog';
+import { AuthProvider } from './hooks/auth';
+import { ProtectRoutes } from './components/protected_route';
+import { Route, Routes } from 'react-router';
+import SignUpView from './routes/sign_up';
+import LoginView from './routes/login';
+
 
 function App() {
-  return ( 
-  <>
-    <CreateBlogView/>
-  </>
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<CreateBlogView />} />
+        <Route path="/sign-up" element={<SignUpView />} />
+        <Route path="/login" element={<LoginView />} />
+        <Route element={ <ProtectRoutes /> }>
+          <Route path='/' element={ <SignUpView /> } />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
-
 export default App;

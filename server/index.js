@@ -2,11 +2,97 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+
+dotenv.config();
+
 
 app.use(cors());
 app.use(express.json());
 
-app.post("/blogs", async(req, res) => {
+
+function generateAccessToken(username) {
+    return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+}
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+  
+    if (token == null) return res.sendStatus(401)
+  
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
+      console.log(err)
+  
+      if (err) return res.sendStatus(403)
+        
+      console.log(user);
+      req.user = user
+  
+      next()
+    })
+}
+
+async function hashPassword(password) {
+    const salt = await bcrypt.genSalt(10); 
+    const hashedPassword = await bcrypt.hash(password, salt); 
+    return { salt, hashedPassword };
+}
+
+app.post("/api/createNewUser", async(req, res) => {
+    const token = generateAccessToken({ username: req.body.username });
+    // res.json(token);
+    const {username, email, password} = req.body;
+
+    const { salt, hashedPassword } = await hashPassword(password);
+
+    const new_user = await pool.query(
+        "INSERT INTO users (username, email, password, salt) VALUES($1, $2, $3, $4) RETURNING *",
+        [username, email, hashedPassword, salt]
+    );
+
+    res.json(new_user.rows[0]);
+
+});
+
+app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        console.log(email);
+
+        const result = await pool.query(
+            "SELECT * FROM users WHERE email = $1",
+            [email]
+        );
+
+        // Check if user exists
+        if (result.rows.length === 0) {
+            console.log("INVALID USER");
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        const user = result.rows[0];
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            console.log("INVALID PASSWORD");
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+        const token = generateAccessToken({ email: user.email }); 
+
+        res.json({ token, name: user.username }); 
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
+app.post("/blogs", authenticateToken, async(req, res) => {
     try {
         const {title, body, likes, favorites, user_id} = req.body;
         const new_blog = await pool.query(
@@ -21,7 +107,7 @@ app.post("/blogs", async(req, res) => {
     }
 });
 
-app.get("/blogs", async(req, res) => {
+app.get("/blogs", authenticateToken, async(req, res) => {
     try {
         const all_blogs = await pool.query("SELECT * FROM blogs");
         res.json(all_blogs.rows);
@@ -64,6 +150,7 @@ app.delete("/blogs/:id", async(req, res) => {
         console.error(err.message);
     }
 })
+
 
 app.listen(5000, () => {
     console.log("started");
