@@ -1,20 +1,14 @@
 import axios from 'axios';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import MDEditor, { EditorContext } from '@uiw/react-md-editor';
 import rehypeSanitize from "rehype-sanitize";
 import "../shared/markdown_editor.css";
-import Cookies from 'js-cookie'; 
 
-async function CreateBlog(blogData) {
+async function UpdateBlog(blogData, id) {
     try {
-        const token = Cookies.get('token');
-      
-        const response = await axios.post("http://localhost:5000/api/blogs/new", blogData, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-          }
-        });
-        console.log("Blog created successfully:", response.data);
+        const response = await axios.put(`http://localhost:5000/blogs/${id}`, blogData);
+        console.log("Blog updated successfully:", response.data);
     } catch (err) {
         console.error(err.message);
     }
@@ -56,7 +50,7 @@ const customPreviewCommand = {
 
 const WriteButton = () => {
     const { preview, dispatch } = React.useContext(EditorContext);
-
+  
     const click = () => {
         if (dispatch) {
             dispatch({
@@ -88,24 +82,44 @@ const editPreviewCommand = {
     icon: <WriteButton />,
 };
 
-export default function CreateBlogView() {
-    const [blogData, setBlogData] = React.useState({
+export default function EditBlogView() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [blogData, setBlogData] = useState({
         title: '',
-        user_id: '' 
+        body: ''
     });
 
-    const [markdownValue, setMarkdownValue] = React.useState("**Hello world!!!**");
+    const [markdownValue, setMarkdownValue] = useState("");
+
+    useEffect(() => {
+        const fetchBlogData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/blogs/${id}`);
+                setBlogData({
+                    title: response.data.title,
+                    body: response.data.body,
+                });
+                setMarkdownValue(response.data.body);
+            } catch (error) {
+                console.error('Error fetching blog data:', error);
+            }
+        };
+
+        fetchBlogData();
+    }, [id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await CreateBlog({
+        await UpdateBlog({
             ...blogData,
             body: markdownValue
-        });
+        }, id);
+        navigate('/blogs'); // Redirect after update
     };
 
     return (
-        <div className="create-blog-container">
+        <div className="edit-blog-container">
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="title">Blog Title</label>
@@ -135,7 +149,7 @@ export default function CreateBlogView() {
                         onChange={setMarkdownValue}
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Create Blog</button>
+                <button type="submit" className="btn btn-primary">Update Blog</button>
             </form>
         </div>
     );

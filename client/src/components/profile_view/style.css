@@ -1,0 +1,12 @@
+.profile-container {
+    margin-top: 5rem;
+}
+
+.card-header {
+    font-size: 2rem;
+}
+
+.profile-image img {
+    width: 150px;
+    height: 150px;
+}

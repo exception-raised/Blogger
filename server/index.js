@@ -13,22 +13,20 @@ app.use(cors());
 app.use(express.json());
 
 
+
 function generateAccessToken(username) {
-    return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+    return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '21600s' });
 }
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
-  
+
     if (token == null) return res.sendStatus(401)
   
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
-      console.log(err)
   
       if (err) return res.sendStatus(403)
-        
-      console.log(user);
       req.user = user
   
       next()
@@ -53,15 +51,13 @@ app.post("/api/createNewUser", async(req, res) => {
         [username, email, hashedPassword, salt]
     );
 
-    res.json(new_user.rows[0]);
+    res.json({email:email, password:password});
 
 });
 
 app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
     try {
-        console.log(email);
-
         const result = await pool.query(
             "SELECT * FROM users WHERE email = $1",
             [email]
@@ -75,7 +71,7 @@ app.post("/api/login", async (req, res) => {
 
         const user = result.rows[0];
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);        
 
         if (!isPasswordValid) {
             console.log("INVALID PASSWORD");
@@ -84,20 +80,51 @@ app.post("/api/login", async (req, res) => {
 
         const token = generateAccessToken({ email: user.email }); 
 
-        res.json({ token, name: user.username }); 
-    } catch (error) {
+        res.json({ token, name: user.username, id: user.id }); 
+        } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
 
+app.get("/api/users/:id", async (req, res) => {
+    const userId = req.params.id;
 
-app.post("/blogs", authenticateToken, async(req, res) => {
     try {
-        const {title, body, likes, favorites, user_id} = req.body;
+        const result = await pool.query("SELECT username, created_at FROM users WHERE id = $1", [userId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(result.rows[0]); // Return the user data
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+app.get("/api/blogs/:id", async (req, res) => {
+    const blogId = req.params.id;
+
+    try {
+        const result = await pool.query("SELECT * FROM blogs WHERE blog_id = $1", [blogId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
+        res.json(result.rows[0]); // Return the user data
+    } catch (error) {
+        console.error('Error fetching Blog:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
+
+app.post("/api/blogs/new", authenticateToken, async(req, res) => {
+    try {
+        const {title, body, user_id} = req.body;
         const new_blog = await pool.query(
             "INSERT INTO blogs (title, body, likes, favorites, user_id) VALUES($1, $2, $3, $4, $5) RETURNING *",
-            [title, body, likes, favorites, user_id]
+            [title, body, 0, 0, 9]
         );
 
         res.json(new_blog.rows[0]);
@@ -107,7 +134,7 @@ app.post("/blogs", authenticateToken, async(req, res) => {
     }
 });
 
-app.get("/blogs", authenticateToken, async(req, res) => {
+app.get("/api/blogs", async(req, res) => {
     try {
         const all_blogs = await pool.query("SELECT * FROM blogs");
         res.json(all_blogs.rows);
@@ -150,6 +177,105 @@ app.delete("/blogs/:id", async(req, res) => {
         console.error(err.message);
     }
 })
+
+app.post('/api/blogs/:id/like', authenticateToken, async (req, res) => {
+    const blogId = req.params.id;
+    const userId = 9; // req.user.id;
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO likes (user_id, blog_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [userId, blogId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ message: 'Blog already liked' });
+        }
+
+        await pool.query('UPDATE blogs SET likes = likes + 1 WHERE blog_id = $1', [blogId]);
+
+        res.json({ message: 'Blog liked successfully' });
+    } catch (error) {
+        console.error('Error liking blog:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// app.use((req, res, next) => {
+//     req.user = { id: 1 }; // Example, replace with real authentication
+//     next();
+// });
+
+app.post('/api/blogs/:id/favorite', authenticateToken, async (req, res) => {
+    const blogId = req.params.id;
+    const userId = 9; // req.user.id;
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO favorites (user_id, blog_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [userId, blogId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ message: 'Blog already favorited' });
+        }
+
+        await pool.query('UPDATE blogs SET favorites = favorites + 1 WHERE blog_id = $1', [blogId]);
+
+        res.json({ message: 'Blog favorited successfully' });
+    } catch (error) {
+        console.error('Error favoriting blog:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/users/:id/likes', authenticateToken, async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'SELECT blogs.* FROM blogs JOIN likes ON blogs.blog_id = likes.blog_id WHERE likes.user_id = $1',
+            [userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching liked blogs:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/users/:id/favorites', authenticateToken, async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'SELECT blogs.* FROM blogs JOIN favorites ON blogs.blog_id = favorites.blog_id WHERE favorites.user_id = $1',
+            [userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching favorited blogs:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/users/:id/blogs', authenticateToken, async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'SELECT * FROM blogs WHERE user_id = $1',
+            [userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching user blogs:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 app.listen(5000, () => {
