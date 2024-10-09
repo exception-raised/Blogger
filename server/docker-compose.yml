@@ -1,5 +1,18 @@
-version: '3'
 services:
+  backend:
+    build: ./
+    ports:
+      - "5000:5000"
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_HOST: db             # Set this to the service name
+      DB_PORT: 5432           # Make sure this matches the internal port of the db
+      DB_NAME: bloggerdb
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:latest
     environment:
@@ -10,18 +23,8 @@ services:
       - ./database.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-
-  backend:
-    build: ./
-    ports:
-      - "5000:5000"
-    environment:
-      DB_USER: postgres
-      DB_PASSWORD: password
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: bloggerdb
-depends_on:
-    db:
-      condition: service_healthy 
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
