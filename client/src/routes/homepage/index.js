@@ -28,17 +28,6 @@ export default function HomePage() {
 
     return (
         <div>
-        
-        <header className="bg-dark text-white p-3">
-            <div className="container d-flex justify-content-between">
-            <h1>Blogger</h1>
-            <nav>
-                <a href="/" className="text-white mx-2">Home</a>
-                <a href="/about" className="text-white mx-2">About</a>
-                <a href="/login" className="btn btn-outline-light">Login</a>
-            </nav>
-            </div>
-        </header>
 
         {/* Hero Section */}
         <section className="bg-light py-5 text-center">

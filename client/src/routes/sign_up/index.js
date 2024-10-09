@@ -2,9 +2,11 @@ import axios from 'axios';
 import React from 'react';
 import { useAuth } from '../../hooks/auth';
 import "./style.css";
+import api from '../../api';
+
 
 async function HandleSignUp(authData) {
-    const response = await axios.post("http://localhost:5000/api/createNewUser", authData);
+    const response = await api.post("/api/createNewUser", authData);
     return response.data;
 }
 
