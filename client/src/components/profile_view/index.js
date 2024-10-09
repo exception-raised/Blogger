@@ -1,41 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie';
+import './style.css'; // Optional for additional styling
 
 export default function ProfileView() {
-    const { id } = useParams(); // Get the user ID from the URL
-    const [user, setUser] = useState(null); // State to hold user data
-    const [loading, setLoading] = useState(true); // State to handle loading
+    const { id } = useParams();
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [recentActivity, setRecentActivity] = useState([]);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/users/${id}`);
-                setUser(response.data); // Set user data
+                const userResponse = await axios.get(`http://localhost:5000/api/users/${id}`);
+                setUser(userResponse.data);
+                
+                const token = Cookies.get('token');
+
+                const headers = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+
             } catch (error) {
-                console.error('Error fetching user profile:', error);
+                console.error('Error fetching user profile or recent activity:', error);
             } finally {
-                setLoading(false); // Set loading to false after fetching
+                setLoading(false);
             }
         };
 
         fetchUserProfile();
-    }, [id]); // Fetch user profile when component mounts or ID changes
+    }, [id]);
 
     if (loading) {
-        return <div>Loading...</div>; // Show loading message while fetching data
+        return <div className="text-center mt-5">Loading...</div>;
     }
 
     if (!user) {
-        return <div>User not found</div>; // Handle case where user is not found
+        return <div className="text-center mt-5">User not found</div>;
     }
 
     return (
-        <div>
-            <h1>{user.username}'s Profile</h1>
-            <p>Email: {user.email}</p>
-            <p>Joined: {new Date(user.created_at).toLocaleDateString()}</p>
-            {/* Add more user details as needed */}
+        <div className="container profile-container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-md-8">
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-header bg-primary text-white text-center">
+                            <h1>{user.username}'s Profile</h1>
+                        </div>
+                        <div className="card-body text-center">
+                            <img
+                                src={`https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`} 
+                                alt="User avatar"
+                                className="rounded-circle img-thumbnail mb-3"
+                                style={{ width: "100px", height: "100px" }}
+                            />
+                            <p>Joined on: {new Date(user.created_at).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

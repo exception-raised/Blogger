@@ -82,7 +82,10 @@ export default function SignUpView() {
                         </div>
                     </div>
                     <button type="submit" className="btn btn-primary w-100 form_input">Submit</button>
-                    <a href="/login" className='mt-3 text-decoration-none text-white'>Already a member? Login</a>
+                    <div className="mt-3">
+                        <span className="text-white">Already a member? </span>
+                        <a href="/sign-up" className="text-decoration-none text-white">Login</a>
+                    </div>
                 </form>
             </div>
         </>

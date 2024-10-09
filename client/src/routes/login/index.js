@@ -9,21 +9,6 @@ async function HandleSignIn(authData) {
 }
 
 
-// const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const form = e.currentTarget;
-
-//     if (form.checkValidity()) {
-//         try {
-//             const response = await HandleSignUp(authData);
-//             login({ email: response.email, password: response.password });
-//         } catch (err) {
-//             console.error(err.message);
-//         }
-//     }
-
-//     setValidated(true); 
-// };
 export default function LoginView() {
     const [authData, setAuthData] = React.useState({}); 
     const { login } = useAuth();
@@ -83,8 +68,11 @@ export default function LoginView() {
                         </div>
                     </div>
                     <button type="submit" className="btn btn-primary w-100 form_input">Submit</button>
-                    <a href="/login" className='mt-3 text-decoration-none text-white'>Don't have an account? Sign up.</a>
-                </form>
+                        <a className="mt-3 text-decoration-none text-white">
+                            <span>Don't have an account? </span>
+                            <a href="/sign-up" className="text-decoration-none text-white">Sign Up</a>
+                        </a>                
+                    </form>
             </div>
         </>
     );
