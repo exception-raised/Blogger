@@ -6,13 +6,10 @@ services:
     environment:
       DB_USER: postgres
       DB_PASSWORD: password
-      DB_HOST: db             # Set this to the service name
-      DB_PORT: 5432           # Make sure this matches the internal port of the db
+      DB_HOST: db             
+      DB_PORT: 5432           
       DB_NAME: bloggerdb
-    depends_on:
-      db:
-        condition: service_healthy
-
+    restart: always
   db:
     image: postgres:latest
     environment:

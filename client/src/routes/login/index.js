@@ -1,10 +1,11 @@
 import axios from 'axios';
 import React from 'react';
 import { useAuth } from '../../hooks/auth';
+import api from '../../api';
 
 
 async function HandleSignIn(authData) {
-    const response = await axios.post("http://localhost:5000/api/login", authData);
+    const response = await api.post("api/login", authData);
     return response.data;
 }
 
@@ -68,10 +69,10 @@ export default function LoginView() {
                         </div>
                     </div>
                     <button type="submit" className="btn btn-primary w-100 form_input">Submit</button>
-                        <a className="mt-3 text-decoration-none text-white">
-                            <span>Don't have an account? </span>
-                            <a href="/sign-up" className="text-decoration-none text-white">Sign Up</a>
-                        </a>                
+                    <div className="mt-3">
+                        <span className="text-white">Don't have an account? </span>
+                        <a href="/sign-up" className="text-decoration-none text-white">Sign Up</a>
+                    </div>
                     </form>
             </div>
         </>

@@ -1,4 +1,6 @@
-CREATE DATABASE bloggerdb;
+
+
+-- CREATE DATABASE bloggerdb;
 
 CREATE TABLE "users" (
   "id" SERIAL PRIMARY KEY,

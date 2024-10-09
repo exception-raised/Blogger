@@ -5,6 +5,7 @@ import rehypeSanitize from "rehype-sanitize";
 import Cookies from 'js-cookie'; 
 import "../shared/markdown_editor.css";
 import { useParams } from 'react-router-dom';
+import api from '../../api';
 
 export default function BlogDetail() {
     const [blog, setBlog] = useState(null);
@@ -15,7 +16,7 @@ export default function BlogDetail() {
         const fetchBlog = async () => {
             try {
                 const token = Cookies.get('token');
-                const response = await axios.get(`http://localhost:5000/api/blogs/${id}`, {
+                const response = await axios.get(api.get(`/api/blogs/${id}`), {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -42,14 +43,13 @@ export default function BlogDetail() {
     async function onFavorite() {
         try {
             const token = Cookies.get('token');
-            const result = await axios.post(`http://localhost:5000/api/blogs/${blog.blog_id}/favorite`, {}, {
+            const result = await axios.post(api.get(`/api/blogs/${blog.blog_id}/favorite`), {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            console.log(result.data); // Log the response data
+ 
 
-            // Update the favorites count
             setBlog(prev => ({
                 ...prev,
                 favorites: prev.favorites + 1,
@@ -62,20 +62,18 @@ export default function BlogDetail() {
     async function onLike() {
         try {
             const token = Cookies.get('token');
-            const result = await axios.post(`http://localhost:5000/api/blogs/${blog.blog_id}/like`, {}, {
+            const result = await axios.post(api.get(`/api/blogs/${blog.blog_id}/like`), {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            console.log(result.data); // Log the response data
 
-            // Update the likes count
             setBlog(prev => ({
                 ...prev,
                 likes: prev.likes + 1,
             }));
         } catch (err) {
-            console.error(err.response ? err.response.data : err.message); // Log error details
+            console.error(err.response ? err.response.data : err.message); 
         }
     }
 
