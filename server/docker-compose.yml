@@ -21,5 +21,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: bloggerdb
-    depends_on:
-      - db
+depends_on:
+    db:
+      condition: service_healthy 
+
