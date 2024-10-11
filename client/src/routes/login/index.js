@@ -1,11 +1,10 @@
-import axios from 'axios';
 import React from 'react';
 import { useAuth } from '../../hooks/auth';
 import api from '../../api';
 
 
 async function HandleSignIn(authData) {
-    const response = await api.post("api/login", authData);
+    const response = await api.post("/api/login", authData);
     return response.data;
 }
 

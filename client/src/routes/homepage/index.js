@@ -1,7 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-
+import api from "../../api.js";
 
 export default function HomePage() {
     const [blogs, setBlogs] = React.useState([]);
@@ -10,7 +10,7 @@ export default function HomePage() {
     React.useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/blogs');
+                const response = await api.get('/api/blogs');
                 console.log(response.data); // Check the structure of the response
                 setBlogs(response.data);
             } catch (error) {
@@ -25,26 +25,29 @@ export default function HomePage() {
     }, []);
 
     const recentBlogs = blogs.slice(0, 6);
+    // @todo: modularize
 
     return (
         <div>
 
-        {/* Hero Section */}
-        <section className="bg-light py-5 text-center">
+
+        <section className="bg-dark py-5 text-center">
             <div className="container">
-            <h2>Welcome to Blogger</h2>
-            <p className="lead">Discover interesting articles and stories.</p>
+            <h2 className='text-white'>Welcome to Blogger</h2>
+            <p className="lead text-white">Discover interesting articles and stories.</p>
             <a href="#recent-posts" className="btn btn-primary">Read Latest Posts</a>
             </div>
+
+            
         </section>
 
         
-        <section id="recent-posts" className="py-5">
+        <section id="recent-posts" className="py-5 bg-dark">
                 <div className="container">
-                    <h3 className="mb-4">Recent Posts</h3>
-                    <div className="row">
+                    <h3 className="mb-4 text-white">Recent Posts</h3>
+                    <div className="row bg-dark">
                         {loading ? (
-                            <div className="text-center">Loading...</div>
+                            <div className="text-center bg-dark">Loading...</div>
                         ) : (
                             recentBlogs.map(blog => (
                                 <PostCard 
@@ -61,11 +64,11 @@ export default function HomePage() {
 
 
         {/* Footer */}
-        <footer className="bg-dark text-white text-center py-3">
+        <footer className="bg-dark text-white text-center py-3 fixed-bottom">
             <div className="container">
             <p>&copy; 2024 Blogger. All Rights Reserved.</p>
-            <a href="#" className="text-white mx-2">Privacy Policy</a>
-            <a href="#" className="text-white mx-2">Contact</a>
+                <a href="#" className="text-white mx-2">Privacy Policy</a>
+                <a href="#" className="text-white mx-2">Contact</a>
             </div>
         </footer>
         </div>
@@ -75,10 +78,10 @@ export default function HomePage() {
 function PostCard({ title, description, id }) {
   return (
     <div className="col-md-4 mb-3">
-      <div className="card h-100">
+      <div className="card h-100 bg-dark">
         <div className="card-body">
-          <h5 className="card-title">{title}</h5>
-          <p className="card-text">{description}</p>
+          <h5 className="card-title text-white">{title}</h5>
+          <p className="card-text text-white">{description}</p>
           <a href={`/post/${id}`} className="btn btn-primary">Read More</a>
         </div>
       </div>
