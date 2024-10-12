@@ -11,8 +11,8 @@ export default function HomePage() {
 
             <section className="py-5 text-center">
                 <div className="container">
-                    <h1 className='text-white'>Welcome to Blogger</h1>
-                    <p className="lead text-white">Discover interesting articles and stories.</p>
+                    <h1 className='text-white'>Blogger: Share, Explore, Inspire</h1>
+                    <p className="lead text-white">Dive into a world of thought-provoking stories, innovative ideas, and creative expressions. Join our community of writers and readers, where every post is a conversation, and every idea has a home.</p>
                 </div>
             </section>
 
