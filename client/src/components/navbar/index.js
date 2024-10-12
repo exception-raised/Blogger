@@ -20,13 +20,13 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light border-bottom border-white h-5" data-bs-theme="dark" style={{height: 5 + 'em'}}>
+        <nav className="navbar navbar-expand-lg navbar-light bg-body-tertiary">
             <div className="container">
                 <Link className="navbar-brand" to="/">Blogger</Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span className="navbar-toggler-icon"></span>
                 </button>
-                <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav ml-auto">
                         <li className="nav-item">
                             <Link className="nav-link" to="/">Home</Link>

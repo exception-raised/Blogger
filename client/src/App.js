@@ -1,4 +1,5 @@
 import './App.css';
+import ListUserBlogs from './components/list_user_blogs';
 import CreateBlogView from './components/create_blog';
 import { AuthProvider } from './hooks/auth';
 import { ProtectRoutes } from './components/protected_route';
@@ -6,6 +7,7 @@ import { Route, Routes, useLocation } from 'react-router';
 import SignUpView from './routes/sign_up';
 import LoginView from './routes/login';
 import ProfileView from './components/profile_view';
+import BlogView from './components/blog_view';
 import HomePage from './routes/homepage';
 import BlogsSection from './routes/blog_section';
 import EditBlogView from './components/edit_blog';
