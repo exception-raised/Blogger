@@ -8,14 +8,22 @@ const path = require('path')
 
 require('dotenv').config({ path: path.resolve(__dirname, './.env') })
 
-app.use(cors());
+app.use(cors({origin: true}));
 app.use(express.json());
 
 console.log(process.env.TOKEN_SECRET)
 
+app.use(function (req, res, next) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    next();
+});
+
 function generateAccessToken(username) {
     return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '21600s' });
 }
+
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
